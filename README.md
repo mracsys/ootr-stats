@@ -22,7 +22,33 @@ These scripts are a mess. Unless you want to check different settings, just use 
 5. Save pre-generated spoiler logs somewhere and update the folder path in the following files:
     1. ext_spoiler_mssql.py
     2. ext_hints_mssql.py
-6. 
+6. If you are using anything other than 10000 logs, edit the views in dbUpdate.py with the total number of logs to analyze
+7. Run the scripts in the following order. This will take a while.
+    1. ext_spoiler_mssql.py
+    2. ext_hints_mssql.py
+    3. dbUpdate.py
+
+Several views will be generated in the database:
+* ad_seeds
+    * returns list of seeds requiring OoT logically to complete
+    * Spreadsheet checks for Burning Kak instead of OoT for the Stone Bridge + GBK LACS settings
+* total_spheres
+    * returns total spheres to complete each seed
+* woth_area
+    * returns list of woth areas as a percent of all seeds
+* woth_item_area
+    * returns list of woth areas excluding songs as a percent of all seeds
+* woth_loc
+    * returns list of woth checks as a percent of all seeds
+* fool_area
+    * returns list of foolish areas as a percent of all seeds
+* non_hinted_loc
+    * returns list of logically required checks per seed that are not found in any hint (woth or sometimes/always)
+    * excludes skulls, keys, songs, beans, ocarinas, light arrows, Zelda's letter, Gerudo card, tunics, shop items, and sphere 0 checks
+* checks_per_area
+    * intermediate view, calculates checks per area excluding keys
+* prog_areas
+    * intermediate view, determines medallion/stone dungeons and which are required
 
 ## Limitations
 * Assumes no MQ dungeons
