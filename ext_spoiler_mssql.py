@@ -8,7 +8,7 @@ spoilers = './spoilers/'
 
 conn = pyodbc.connect('Driver={SQL Server};'
                       'Server=MAGELLAN\SQLEXPRESS;'
-                      'Database=OotrStatsDF;'
+                      'Database=OotrStatsGC;'
                       'Trusted_Connection=yes;')
 c = conn.cursor()
 
@@ -21,10 +21,10 @@ c.execute("DROP TABLE IF EXISTS dbo.woth")
 c.execute("DROP TABLE IF EXISTS dbo.fool")
 c.execute("DROP TABLE IF EXISTS dbo.items")
 c.execute("DROP TABLE IF EXISTS dbo.spheres")
-c.execute('CREATE TABLE dbo.woth (seed NVARCHAR(16), loc NVARCHAR(53), item NVARCHAR(36))')
+c.execute('CREATE TABLE dbo.woth (seed NVARCHAR(16), loc NVARCHAR(59), item NVARCHAR(36))')
 c.execute('CREATE TABLE dbo.fool (seed NVARCHAR(16), area NVARCHAR(23))')
-c.execute('CREATE TABLE dbo.items (seed NVARCHAR(16), loc NVARCHAR(53), item NVARCHAR(36))')
-c.execute('CREATE TABLE dbo.spheres (seed NVARCHAR(16), loc NVARCHAR(53), item NVARCHAR(36), sphere INT)')
+c.execute('CREATE TABLE dbo.items (seed NVARCHAR(16), loc NVARCHAR(59), item NVARCHAR(36))')
+c.execute('CREATE TABLE dbo.spheres (seed NVARCHAR(16), loc NVARCHAR(59), item NVARCHAR(36), sphere INT)')
 conn.commit()
 
 # process spoiler logs

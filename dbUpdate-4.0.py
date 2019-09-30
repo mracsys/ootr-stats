@@ -1,7 +1,7 @@
 import sys
 import json
 # OoTR source code location
-sys.path.insert(0, '../OoTR-5.1')
+sys.path.insert(0, '../OoTR-4.0')
 import os
 import pyodbc
 from LocationList import location_table
@@ -9,7 +9,7 @@ from HintList import hintTable
 
 conn = pyodbc.connect('Driver={SQL Server};'
                       'Server=MAGELLAN\SQLEXPRESS;'
-                      'Database=OotrStats5;'
+                      'Database=OotrStats;'
                       'Trusted_Connection=yes;')
 c = conn.cursor()
 
@@ -66,10 +66,7 @@ for k,v in location_table.items():
                 hintName = hintTable[k][0]
         else:
             hintName = hintTable[k][1]
-    if v[4] is None:
-        c.execute("INSERT INTO locations VALUES(?, ?, ?, ?, ?, ?, ?, ?)", (k, v[0], v[4], hintName, mq, shop, scrub, cow))
-    else:
-        c.execute("INSERT INTO locations VALUES(?, ?, ?, ?, ?, ?, ?, ?)", (k, v[0], v[4][0], hintName, mq, shop, scrub, cow))
+    c.execute("INSERT INTO locations VALUES(?, ?, ?, ?, ?, ?, ?, ?)", (k, v[0], v[3], hintName, mq, shop, scrub, cow))
 
 for k,v in hintTable.items():
     if type(v[2]) is str:

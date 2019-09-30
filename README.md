@@ -50,7 +50,10 @@ Several views will be generated in the database:
 * prog_areas
     * intermediate view, determines medallion/stone dungeons and which are required
 
+The various SQL files in this repo are used to generate most of the tables in the spreadsheet. Filenames should be mostly self-explanatory.
+
 ## Limitations
 * Assumes no MQ dungeons
 * Assumes no sanities (key, scrub, shop, skull, cow, bean)
 * Sphere analysis does not consider advanced tricks/out-of-logic checks
+* Hint analysis does not go beyond direct hints. WOTH chains are not considered

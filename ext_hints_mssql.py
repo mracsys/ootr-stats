@@ -12,7 +12,7 @@ spoilers = './spoilers/'
 
 conn = pyodbc.connect('Driver={SQL Server};'
                       'Server=MAGELLAN\SQLEXPRESS;'
-                      'Database=OotrStatsDF;'
+                      'Database=OotrStatsGC;'
                       'Trusted_Connection=yes;')
 c = conn.cursor()
 
