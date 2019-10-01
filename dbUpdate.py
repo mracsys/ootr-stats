@@ -9,7 +9,7 @@ from HintList import hintTable
 
 conn = pyodbc.connect('Driver={SQL Server};'
                       'Server=MAGELLAN\SQLEXPRESS;'
-                      'Database=OotrStats5;'
+                      'Database=OotrStatsDSK;'
                       'Trusted_Connection=yes;')
 c = conn.cursor()
 
@@ -27,6 +27,8 @@ c.execute('DROP VIEW IF EXISTS woth_area')
 c.execute('DROP VIEW IF EXISTS woth_item_area')
 c.execute('DROP VIEW IF EXISTS woth_loc')
 c.execute('DROP VIEW IF EXISTS fool_area')
+c.execute('DROP VIEW IF EXISTS str_reqs')
+c.execute('DROP VIEW IF EXISTS hook_reqs')
 c.execute('CREATE TABLE locations (loc NVARCHAR(57), ztype NVARCHAR(11), area NVARCHAR(23), hintname NVARCHAR(66), mq BIT, shop BIT, scrub BIT, cow BIT)')
 c.execute('CREATE TABLE itemhints (item NVARCHAR(36), hintname NVARCHAR(66))')
 c.execute('CREATE TABLE dkeys (area NVARCHAR(23), nkeys INTEGER)')
@@ -42,6 +44,8 @@ c.execute("CREATE VIEW woth_area AS SELECT area, COUNT(area) * 100.0 / 10000 AS 
 c.execute("CREATE VIEW woth_item_area AS SELECT area, COUNT(area) * 100.0 / 10000 AS pct FROM (SELECT DISTINCT woth.seed, locations.area FROM woth LEFT OUTER JOIN locations ON woth.loc = locations.loc WHERE (NOT (locations.ztype = 'Song'))) AS derivedtbl_1 GROUP BY area")
 c.execute("CREATE VIEW woth_loc AS SELECT loc, COUNT(loc) * 100.0 / 10000 AS pct FROM woth GROUP BY loc")
 c.execute("CREATE VIEW fool_area AS SELECT area, COUNT(area) * 100.0 / 10000 AS pct FROM fool GROUP BY area")
+c.execute("CREATE VIEW str_reqs AS SELECT [str_req], COUNT([str_req]) * 100.0 / 10000.0 AS pct FROM (SELECT [seed], COUNT([seed]) AS str_req FROM [dbo].[spheres] WHERE [item] = 'Progressive Strength Upgrade' GROUP BY [seed]) AS derivedtbl_1 GROUP BY [str_req]")
+c.execute("CREATE VIEW hook_reqs AS SELECT [hook_req], COUNT([hook_req]) * 100.0 / 10000.0 AS pct FROM (SELECT [seed], COUNT([seed]) AS hook_req FROM [dbo].[spheres] WHERE [item] = 'Progressive Hookshot' GROUP BY [seed]) AS derivedtbl_1 GROUP BY [hook_req]")
 
 # Extract location metadata from source code
 for k,v in location_table.items():
