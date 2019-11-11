@@ -12,7 +12,7 @@ spoilers = './spoilers/'
 
 conn = pyodbc.connect('Driver={SQL Server};'
                       'Server=MAGELLAN\SQLEXPRESS;'
-                      'Database=OotrStatsDSK;'
+                      'Database=OotrStatsS3;'
                       'Trusted_Connection=yes;')
 c = conn.cursor()
 
@@ -47,7 +47,7 @@ for k,v in location_table.items():
             locHints.append({'loc': k, 'hintLoc': hintName})
     if not (v[4] is None):
         if not (v[4][0] in areaHints):
-            areaHints.append(v[4][0])
+            areaHints.append('#'+v[4][0]+'#')
 
 for k,v in hintTable.items():
     if type(v[2]) is str:
@@ -82,14 +82,14 @@ for filename in os.listdir(spoilers):
                     loc = None
                     for t in areaHints:
                         if t in hint:
-                            loc = t
+                            loc = t[1:len(t)-1]
                     item = None
                 elif 'foolish choice' in hint:
                     htype = 'fool'
                     loc = None
                     for t in areaHints:
                         if t in hint:
-                            loc = t
+                            loc = t[1:len(t)-1]
                     item = None
                 else:
                     htype = 'item'

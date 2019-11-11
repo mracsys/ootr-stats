@@ -8,7 +8,7 @@ spoilers = './spoilers/'
 
 conn = pyodbc.connect('Driver={SQL Server};'
                       'Server=MAGELLAN\SQLEXPRESS;'
-                      'Database=OotrStatsDSK;'
+                      'Database=OotrStatsS3;'
                       'Trusted_Connection=yes;')
 c = conn.cursor()
 
@@ -21,10 +21,12 @@ c.execute("DROP TABLE IF EXISTS dbo.woth")
 c.execute("DROP TABLE IF EXISTS dbo.fool")
 c.execute("DROP TABLE IF EXISTS dbo.items")
 c.execute("DROP TABLE IF EXISTS dbo.spheres")
+c.execute("DROP TABLE IF EXISTS dbo.ispheres")
 c.execute('CREATE TABLE dbo.woth (seed NVARCHAR(16), loc NVARCHAR(59), item NVARCHAR(36))')
 c.execute('CREATE TABLE dbo.fool (seed NVARCHAR(16), area NVARCHAR(23))')
 c.execute('CREATE TABLE dbo.items (seed NVARCHAR(16), loc NVARCHAR(59), item NVARCHAR(36))')
 c.execute('CREATE TABLE dbo.spheres (seed NVARCHAR(16), loc NVARCHAR(59), item NVARCHAR(36), sphere INT)')
+c.execute('CREATE TABLE dbo.ispheres (seed NVARCHAR(16), loc NVARCHAR(59), item NVARCHAR(36), sphere INT)')
 conn.commit()
 
 # process spoiler logs
@@ -63,8 +65,14 @@ for filename in os.listdir(spoilers):
                         item = 'Bottle'
                 row = (seed, l, item)
                 c.execute('INSERT INTO items VALUES(?, ?, ?)',row)
-                
+            
+            proghook = 1
+            progstr = 1
+            progscale = 1
+            isphere = 0
+
             for sphere in sp[':playthrough']:
+                itemInSphere = False
                 for l, i in sp[':playthrough'][sphere].items():
                     if type(i) is dict:
                         item = i['item']
@@ -75,6 +83,27 @@ for filename in os.listdir(spoilers):
                             item = 'Bottle'
                     row = (seed, l, item, int(sphere))
                     c.execute('INSERT INTO spheres VALUES(?, ?, ?, ?)',row)
+                    if item == 'Progressive Hookshot':
+                        if proghook == 1:
+                            item = 'Hookshot'
+                        else:
+                            item = 'Longshot'
+                        proghook = proghook + 1
+                    if item == 'Progressive Strength Upgrade':
+                        item = 'Strength ' + str(progstr)
+                        progstr = progstr + 1
+                    if item == 'Progressive Scale':
+                        if progscale == 1:
+                            item = 'Zora Scale'
+                        else:
+                            item = 'Gold Scale'
+                        progscale = progscale + 1
+                    if (not ('Small Key' in item or 'Boss Key' in item or 'Buy ' in item or 'Deliver ' in item or 'Emerald' in item or 'Ruby' in item or 'Sapphire' in item or 'Medallion' in item or 'Bug' in item)) and item != 'Fish' and item != '':
+                        row = (seed, l, item, int(isphere))
+                        c.execute('INSERT INTO ispheres VALUES(?, ?, ?, ?)',row)
+                        itemInSphere = True
+                if itemInSphere:
+                    isphere = isphere + 1
 
 conn.commit()
 conn.close()

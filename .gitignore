@@ -1,6 +1,9 @@
 /spoilers/
 /freaky/
+/archives/
 /4.0-style/
 /.vscode/
 *.zip
 *.xlsx
+*.xlsm
+*.docx

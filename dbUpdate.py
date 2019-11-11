@@ -9,7 +9,7 @@ from HintList import hintTable
 
 conn = pyodbc.connect('Driver={SQL Server};'
                       'Server=MAGELLAN\SQLEXPRESS;'
-                      'Database=OotrStatsDSK;'
+                      'Database=OotrStatsS3;'
                       'Trusted_Connection=yes;')
 c = conn.cursor()
 
@@ -40,12 +40,12 @@ c.execute("CREATE VIEW checks_per_area AS SELECT locations.area, COUNT(locations
 c.execute("CREATE VIEW prog_areas AS SELECT spheres.seed, bosses.dungeon FROM spheres LEFT OUTER JOIN bosses ON bosses.loc = spheres.loc LEFT OUTER JOIN ad_seeds ON ad_seeds.adseed = spheres.seed WHERE (NOT (bosses.dungeon IS NULL)) AND (spheres.item LIKE '%Medallion') OR (NOT (bosses.dungeon IS NULL)) AND (spheres.item = 'Kokiri Emerald' OR spheres.item = 'Goron Ruby' OR spheres.item = 'Zora Sapphire') AND (NOT (ad_seeds.adseed IS NULL))")
 c.execute("CREATE VIEW total_spheres AS SELECT seed, MAX(sphere) AS max_sphere FROM spheres GROUP BY seed")
 c.execute("CREATE VIEW non_hinted_loc AS SELECT DISTINCT spheres.seed, spheres.loc, locations.area, spheres.item, spheres.sphere, spheres.sphere * 100.0 / total_spheres.max_sphere AS norm_sphere, hints.htype FROM spheres LEFT OUTER JOIN locations ON locations.loc = spheres.loc LEFT OUTER JOIN hints ON spheres.seed = hints.seed AND (locations.loc = hints.loc OR locations.area = hints.loc) LEFT OUTER JOIN prog_areas ON prog_areas.dungeon = locations.area AND prog_areas.seed = spheres.seed LEFT OUTER JOIN total_spheres ON total_spheres.seed = spheres.seed WHERE (hints.htype IS NULL OR hints.htype <> 'woth' AND hints.htype <> 'item') AND (NOT (locations.area IS NULL)) AND (spheres.item <> 'Gold Skulltula Token') AND (spheres.item <> 'Magic Bean') AND (spheres.item <> 'Ocarina') AND (spheres.item <> 'Gold Skulltula Token') AND (spheres.item <> 'Gerudo Membership Card') AND (spheres.item <> 'Zeldas Letter') AND (spheres.item <> 'Light Arrows') AND (spheres.item <> 'Goron Tunic') AND (spheres.item <> 'Zora Tunic') AND (NOT (spheres.item LIKE '% Key %')) AND (NOT (spheres.item LIKE '%Buy %')) AND (spheres.sphere > 2) AND (prog_areas.dungeon IS NULL) AND (locations.ztype <> 'Song') AND (dbo.spheres.loc <> 'Ganon') AND (dbo.spheres.loc <> 'King Zora Moves') AND (dbo.spheres.loc <> 'Epona') AND (dbo.spheres.loc <> 'Gerudo Fortress Carpenter Rescue')")
-c.execute("CREATE VIEW woth_area AS SELECT area, COUNT(area) * 100.0 / 10000 AS pct FROM (SELECT DISTINCT woth.seed, locations.area FROM woth LEFT OUTER JOIN locations ON woth.loc = locations.loc) AS derivedtbl_1 GROUP BY area")
-c.execute("CREATE VIEW woth_item_area AS SELECT area, COUNT(area) * 100.0 / 10000 AS pct FROM (SELECT DISTINCT woth.seed, locations.area FROM woth LEFT OUTER JOIN locations ON woth.loc = locations.loc WHERE (NOT (locations.ztype = 'Song'))) AS derivedtbl_1 GROUP BY area")
-c.execute("CREATE VIEW woth_loc AS SELECT loc, COUNT(loc) * 100.0 / 10000 AS pct FROM woth GROUP BY loc")
-c.execute("CREATE VIEW fool_area AS SELECT area, COUNT(area) * 100.0 / 10000 AS pct FROM fool GROUP BY area")
-c.execute("CREATE VIEW str_reqs AS SELECT [str_req], COUNT([str_req]) * 100.0 / 10000.0 AS pct FROM (SELECT [seed], COUNT([seed]) AS str_req FROM [dbo].[spheres] WHERE [item] = 'Progressive Strength Upgrade' GROUP BY [seed]) AS derivedtbl_1 GROUP BY [str_req]")
-c.execute("CREATE VIEW hook_reqs AS SELECT [hook_req], COUNT([hook_req]) * 100.0 / 10000.0 AS pct FROM (SELECT [seed], COUNT([seed]) AS hook_req FROM [dbo].[spheres] WHERE [item] = 'Progressive Hookshot' GROUP BY [seed]) AS derivedtbl_1 GROUP BY [hook_req]")
+c.execute("CREATE VIEW woth_area AS SELECT area, COUNT(area) * 100.0 / 100000 AS pct FROM (SELECT DISTINCT woth.seed, locations.area FROM woth LEFT OUTER JOIN locations ON woth.loc = locations.loc) AS derivedtbl_1 GROUP BY area")
+c.execute("CREATE VIEW woth_item_area AS SELECT area, COUNT(area) * 100.0 / 100000 AS pct FROM (SELECT DISTINCT woth.seed, locations.area FROM woth LEFT OUTER JOIN locations ON woth.loc = locations.loc WHERE (NOT (locations.ztype = 'Song'))) AS derivedtbl_1 GROUP BY area")
+c.execute("CREATE VIEW woth_loc AS SELECT loc, COUNT(loc) * 100.0 / 100000 AS pct FROM woth GROUP BY loc")
+c.execute("CREATE VIEW fool_area AS SELECT area, COUNT(area) * 100.0 / 100000 AS pct FROM fool GROUP BY area")
+c.execute("CREATE VIEW str_reqs AS SELECT [str_req], COUNT([str_req]) * 100.0 / 100000.0 AS pct FROM (SELECT [seed], COUNT([seed]) AS str_req FROM [dbo].[spheres] WHERE [item] = 'Progressive Strength Upgrade' GROUP BY [seed]) AS derivedtbl_1 GROUP BY [str_req]")
+c.execute("CREATE VIEW hook_reqs AS SELECT [hook_req], COUNT([hook_req]) * 100.0 / 100000.0 AS pct FROM (SELECT [seed], COUNT([seed]) AS hook_req FROM [dbo].[spheres] WHERE [item] = 'Progressive Hookshot' GROUP BY [seed]) AS derivedtbl_1 GROUP BY [hook_req]")
 
 # Extract location metadata from source code
 for k,v in location_table.items():
