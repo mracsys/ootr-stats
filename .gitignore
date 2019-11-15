@@ -1,8 +1,11 @@
+/100k-spoilers/
 /spoilers/
 /freaky/
 /archives/
 /4.0-style/
 /.vscode/
+/__pycache__/
+pgcred.py
 *.zip
 *.xlsx
 *.xlsm
