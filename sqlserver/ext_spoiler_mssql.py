@@ -4,11 +4,11 @@ import os
 import pyodbc
 
 # Spoiler log location
-spoilers = './spoilers/'
+spoilers = '../spoilersS42S/'
 
 conn = pyodbc.connect('Driver={SQL Server};'
                       'Server=MAGELLAN\SQLEXPRESS;'
-                      'Database=OotrStatsS3;'
+                      'Database=OotrStatsS42S;'
                       'Trusted_Connection=yes;')
 c = conn.cursor()
 

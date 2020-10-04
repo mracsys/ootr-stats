@@ -1,0 +1,1 @@
+SELECT AVG(onum) FROM obvious_seeds

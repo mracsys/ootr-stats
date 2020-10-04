@@ -1,18 +1,18 @@
 import sys
 import json
 # OoTR source code location
-sys.path.insert(0, '../OoTR-5.1')
+sys.path.insert(0, '../../OoT-Randomizer-R')
 import os
 import pyodbc
 from LocationList import location_table
 from HintList import hintTable
 
 # Spoiler log location
-spoilers = './spoilers/'
+spoilers = '../spoilersS42S/'
 
 conn = pyodbc.connect('Driver={SQL Server};'
                       'Server=MAGELLAN\SQLEXPRESS;'
-                      'Database=OotrStatsS3;'
+                      'Database=OotrStatsS42S;'
                       'Trusted_Connection=yes;')
 c = conn.cursor()
 
@@ -31,7 +31,7 @@ for k,v in location_table.items():
         mq = 1
     if 'Shop' in k or 'Bazaar' in k:
         shop = 1
-    if 'Scrub' in k and (v[0] == 'NPC' or v[0] == 'GrottoNPC') and k != 'HF Grotto Deku Scrub Piece of Heart' and k != 'LW Grotto Deku Scrub Deku Nut Upgrade' and k != 'LW Deku Scrub Deku Stick Upgrade':
+    if 'Scrub' in k and (v[0] == 'NPC' or v[0] == 'GrottoNPC') and k != 'HF Deku Scrub Grotto' and k != 'LW Deku Scrub Near Bridge' and k != 'LW Deku Scrub Grotto Front':
         scrub = 1
     if 'Cow' in k:
         cow = 1

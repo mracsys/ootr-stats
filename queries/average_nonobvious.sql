@@ -1,0 +1,1 @@
+SELECT AVG(opct) FROM obvious_seeds

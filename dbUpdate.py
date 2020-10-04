@@ -1,7 +1,7 @@
 import sys
 import json
 # OoTR source code location
-sys.path.insert(0, '../../OoT-Randomizer-R')
+sys.path.insert(0, '../OoTR-5.1')
 import os
 import pyodbc
 from LocationList import location_table
@@ -9,7 +9,7 @@ from HintList import hintTable
 
 conn = pyodbc.connect('Driver={SQL Server};'
                       'Server=MAGELLAN\SQLEXPRESS;'
-                      'Database=OotrStatsS42S;'
+                      'Database=OotrStatsS3;'
                       'Trusted_Connection=yes;')
 c = conn.cursor()
 
@@ -18,7 +18,6 @@ c.execute("DROP TABLE IF EXISTS itemhints")
 c.execute("DROP TABLE IF EXISTS dkeys")
 c.execute("DROP TABLE IF EXISTS bosses")
 c.execute("DROP TABLE IF EXISTS unique_items")
-c.execute("DROP TABLE IF EXISTS sphere0")
 c.execute('DROP VIEW IF EXISTS ad_seeds')
 c.execute('DROP VIEW IF EXISTS checks_per_area')
 c.execute('DROP VIEW IF EXISTS non_hinted_loc')
@@ -30,22 +29,11 @@ c.execute('DROP VIEW IF EXISTS woth_loc')
 c.execute('DROP VIEW IF EXISTS fool_area')
 c.execute('DROP VIEW IF EXISTS str_reqs')
 c.execute('DROP VIEW IF EXISTS hook_reqs')
-c.execute('DROP VIEW IF EXISTS scale_reqs')
-c.execute('DROP VIEW IF EXISTS woth_types')
-c.execute('DROP VIEW IF EXISTS total_ispheres')
-c.execute('DROP VIEW IF EXISTS obvious_areas')
-c.execute('DROP VIEW IF EXISTS obvious_items')
-c.execute('DROP VIEW IF EXISTS obvious_seeds')
-c.execute('DROP VIEW IF EXISTS stone_dungeons')
-c.execute('DROP VIEW IF EXISTS ganon_unfoolish')
-c.execute('DROP VIEW IF EXISTS ganon_locked')
-
-c.execute('CREATE TABLE locations (loc NVARCHAR(59), ztype NVARCHAR(11), area NVARCHAR(23), hintname NVARCHAR(90), mq BIT, shop BIT, scrub BIT, cow BIT, always BIT, sometimes BIT)')
+c.execute('CREATE TABLE locations (loc NVARCHAR(57), ztype NVARCHAR(11), area NVARCHAR(23), hintname NVARCHAR(66), mq BIT, shop BIT, scrub BIT, cow BIT, always BIT, sometimes BIT)')
 c.execute('CREATE TABLE itemhints (item NVARCHAR(36), hintname NVARCHAR(66))')
 c.execute('CREATE TABLE dkeys (area NVARCHAR(23), nkeys INTEGER)')
 c.execute('CREATE TABLE bosses (loc NVARCHAR(57), dungeon NVARCHAR(17))')
 c.execute('CREATE TABLE unique_items (item NVARCHAR(36), itype NVARCHAR(16))')
-c.execute('CREATE TABLE sphere0 (location NVARCHAR(59), sphere INTEGER)')
 conn.commit()
 c.execute("CREATE VIEW ad_seeds AS SELECT seed AS adseed FROM spheres WHERE (loc = 'Song from Ocarina of Time')")
 c.execute("CREATE VIEW checks_per_area AS SELECT locations.area, COUNT(locations.loc) - COALESCE (MAX(dkeys.nkeys), 0) AS checks FROM locations LEFT OUTER JOIN dkeys ON locations.area = dkeys.area WHERE (locations.ztype = 'Chest') OR (locations.ztype = 'Cutscene') OR (locations.ztype = 'BossHeart') OR (locations.ztype = 'Collectable') OR (locations.ztype = 'NPC') OR (locations.ztype = 'GrottoNPC') GROUP BY locations.area")
@@ -58,15 +46,6 @@ c.execute("CREATE VIEW woth_loc AS SELECT loc, COUNT(loc) * 100.0 / 100000 AS pc
 c.execute("CREATE VIEW fool_area AS SELECT area, COUNT(area) * 100.0 / 100000 AS pct FROM fool GROUP BY area")
 c.execute("CREATE VIEW str_reqs AS SELECT [str_req], COUNT([str_req]) * 100.0 / 100000.0 AS pct FROM (SELECT [seed], COUNT([seed]) AS str_req FROM [dbo].[spheres] WHERE [item] = 'Progressive Strength Upgrade' GROUP BY [seed]) AS derivedtbl_1 GROUP BY [str_req]")
 c.execute("CREATE VIEW hook_reqs AS SELECT [hook_req], COUNT([hook_req]) * 100.0 / 100000.0 AS pct FROM (SELECT [seed], COUNT([seed]) AS hook_req FROM [dbo].[spheres] WHERE [item] = 'Progressive Hookshot' GROUP BY [seed]) AS derivedtbl_1 GROUP BY [hook_req]")
-c.execute("CREATE VIEW scale_reqs AS SELECT scale_req, COUNT(scale_req) * 100.0 / 100000.0 AS pct FROM (SELECT seed, COUNT(seed) AS scale_req FROM spheres WHERE item = 'Progressive Scale' GROUP BY seed) AS derivedtbl_1 GROUP BY scale_req")
-c.execute("CREATE VIEW woth_types AS SELECT DISTINCT hints.seed, hints.loc, (CASE WHEN awoth.ztype = 'Song' AND bothcheck.hinttype IS NULL THEN 'Song' WHEN awoth.ztype != 'Song' AND bothcheck.hinttype IS NULL THEN 'Item' WHEN awoth.ztype IS NULL AND bothcheck.hinttype IS NULL THEN 'None' ELSE 'Both' END) AS hint_type FROM hints LEFT OUTER JOIN (SELECT woth.seed, woth.loc, locations.area, woth.item, locations.ztype FROM woth LEFT OUTER JOIN locations ON woth.loc = locations.loc) AS awoth ON awoth.seed = hints.seed AND awoth.area = hints.loc LEFT OUTER JOIN (SELECT DISTINCT hints_1.seed, hints_1.loc, (CASE WHEN awoth1.ztype = 'Song' THEN 'Song' ELSE 'Item' END) AS hinttype FROM hints AS hints_1 LEFT OUTER JOIN (SELECT woth_1.seed, woth_1.loc, locations_1.area, woth_1.item, locations_1.ztype FROM woth AS woth_1 LEFT OUTER JOIN locations AS locations_1 ON woth_1.loc = locations_1.loc) AS awoth1 ON awoth1.seed = hints_1.seed AND awoth1.area = hints_1.loc WHERE (hints_1.htype = 'woth')) AS bothcheck ON bothcheck.seed = hints.seed AND bothcheck.loc = hints.loc AND bothcheck.hinttype <> (CASE WHEN awoth.ztype = 'Song' THEN 'Song' ELSE 'Item' END) WHERE (hints.htype = 'woth')")
-c.execute("CREATE VIEW total_ispheres AS SELECT seed, MAX(sphere) AS max_sphere FROM ispheres GROUP BY seed")
-c.execute("CREATE VIEW obvious_areas AS (SELECT seed, dungeon AS area FROM spheres LEFT JOIN bosses ON bosses.loc = spheres.loc WHERE spheres.item LIKE '%Medallion' AND spheres.loc != 'Links Pocket') UNION (SELECT seed, loc AS area FROM hints WHERE htype = 'woth')")
-c.execute("CREATE VIEW obvious_items AS SELECT dbo.ispheres.seed, dbo.ispheres.loc, dbo.ispheres.item, dbo.ispheres.sphere, (CASE WHEN (NOT sphere0.sphere IS NULL) THEN 'Yes' WHEN locations.always = 1 THEN 'Yes' WHEN obvious_areas.area IS NULL THEN 'No' ELSE 'Yes' END) AS obvious FROM dbo.ispheres LEFT OUTER JOIN dbo.locations ON dbo.ispheres.loc = dbo.locations.loc LEFT OUTER JOIN dbo.sphere0 ON dbo.locations.loc = dbo.sphere0.location LEFT OUTER JOIN dbo.obvious_areas ON dbo.obvious_areas.area = dbo.locations.area AND dbo.obvious_areas.seed = dbo.ispheres.seed WHERE (dbo.ispheres.item <> 'Gold Skulltula Token') AND (dbo.ispheres.item <> 'Time Travel') AND (dbo.ispheres.item <> 'Triforce') AND (dbo.ispheres.item <> 'Scarecrow Song') AND (dbo.ispheres.item <> 'Skull Mask') AND (dbo.ispheres.item <> 'Blue Fire') AND (dbo.ispheres.item <> 'Big Poe') AND (dbo.ispheres.item <> 'Sell Big Poe') AND (dbo.ispheres.item <> 'Water Temple Clear') AND (dbo.ispheres.item <> 'Zeldas Letter') AND (dbo.ispheres.item <> 'Gerudo Membership Card') AND (dbo.ispheres.item <> 'Magic Bean') AND (dbo.ispheres.item <> 'Ocarina')")
-c.execute("CREATE VIEW obvious_seeds AS SELECT seedlist.seed, seedlist.seeds * 1.0 - itemlist.oitems AS onum, itemlist.oitems * 1.0 / seedlist.seeds AS opct FROM (SELECT seed, COUNT(seed) AS seeds FROM dbo.obvious_items GROUP BY seed) AS seedlist LEFT OUTER JOIN (SELECT seed, obvious, COUNT(obvious) AS oitems FROM dbo.obvious_items AS obvious_items_1 GROUP BY seed, obvious) AS itemlist ON seedlist.seed = itemlist.seed WHERE (itemlist.obvious = 'Yes')")
-c.execute("CREATE VIEW stone_dungeons AS SELECT [seed], [loc] AS boss FROM [items] WHERE ([item] = 'Kokiri Emerald' OR [item] = 'Goron Ruby' OR [item] = 'Zora Sapphire') AND [loc] != 'Links Pocket'")
-c.execute("CREATE VIEW ganon_unfoolish AS SELECT DISTINCT [seed] FROM [items] LEFT JOIN [locations] ON [locations].loc = [items].loc WHERE [area] = 'Ganon''s Castle' AND ([item] = 'Kokiri Sword' OR [item] = 'Bomb Bag' OR [item] = 'Rutos Letter' OR [item] = 'Boomerang' OR [item] = 'Progressive Hookshot' OR [item] = 'Progressive Strength' OR [item] = 'Bow' OR [item] = 'Megaton Hammer' OR [item] = 'Bomb Bag' OR [item] = 'Progressive Strength' OR [item] = 'Bow' OR [item] = 'Progressive Hookshot' OR [item] = 'Iron Boots' OR [item] = 'Progressive Scale' OR [item] = 'Bow' OR [item] = 'Progressive Hookshot' OR [item] = 'Bomb Bag' OR [item] = 'Magic Meter' OR [item] = 'Dins Fire' OR [item] = 'Hover Boots' OR [item] = 'Progressive Strength' OR [item] = 'Mirror Shield' OR [item] = 'Progressive Hookshot' OR [item] = 'Slingshot' OR [item] = 'Boomerang')")
-c.execute("CREATE VIEW ganon_locked AS SELECT DISTINCT [stone_dungeons].[seed] FROM [stone_dungeons] LEFT JOIN [items] ON [stone_dungeons].[seed] = [items].[seed] LEFT JOIN [locations] ON [locations].loc = [items].loc WHERE [area] = 'Ganon''s Castle' AND (([boss] = 'Queen Gohma' AND [item] = 'Kokiri Sword') OR ([boss] = 'King Dodongo' AND [item] = 'Bomb Bag') OR ([boss] = 'Barinade' AND [item] = 'Rutos Letter') OR ([boss] = 'Barinade' AND [item] = 'Boomerang') OR ([boss] = 'Phantom Ganon' AND [item] = 'Progressive Hookshot') OR ([boss] = 'Phantom Ganon' AND [item] = 'Progressive Strength') OR ([boss] = 'Phantom Ganon' AND [item] = 'Bow') OR ([boss] = 'Volvagia' AND [item] = 'Megaton Hammer') OR ([boss] = 'Volvagia' AND [item] = 'Bomb Bag') OR ([boss] = 'Volvagia' AND [item] = 'Progressive Strength') OR ([boss] = 'Volvagia' AND [item] = 'Bow') OR ([boss] = 'Morpha' AND [item] = 'Progressive Hookshot') OR ([boss] = 'Morpha' AND [item] = 'Iron Boots') OR ([boss] = 'Morpha' AND [item] = 'Progressive Scale') OR ([boss] = 'Morpha' AND [item] = 'Bow') OR ([boss] = 'Bongo Bongo' AND [item] = 'Progressive Hookshot') OR ([boss] = 'Bongo Bongo' AND [item] = 'Bomb Bag') OR ([boss] = 'Bongo Bongo' AND [item] = 'Magic Meter') OR ([boss] = 'Bongo Bongo' AND [item] = 'Dins Fire') OR ([boss] = 'Bongo Bongo' AND [item] = 'Hover Boots') OR ([boss] = 'Twinrova' AND [item] = 'Progressive Strength') OR ([boss] = 'Twinrova' AND [item] = 'Mirror Shield') OR ([boss] = 'Twinrova' AND [item] = 'Progressive Hookshot') OR ([boss] = 'Twinrova' AND [item] = 'Slingshot') OR ([boss] = 'Twinrova' AND [item] = 'Boomerang'))")
 
 # Extract location metadata from source code
 for k,v in location_table.items():
@@ -81,7 +60,7 @@ for k,v in location_table.items():
         mq = 1
     if 'Shop' in k or 'Bazaar' in k:
         shop = 1
-    if 'Scrub' in k and (v[0] == 'NPC' or v[0] == 'GrottoNPC') and k != 'HF Deku Scrub Grotto' and k != 'LW Deku Scrub Near Bridge' and k != 'LW Deku Scrub Grotto Front':
+    if 'Scrub' in k and (v[0] == 'NPC' or v[0] == 'GrottoNPC') and k != 'HF Grotto Deku Scrub Piece of Heart' and k != 'LW Grotto Deku Scrub Deku Nut Upgrade' and k != 'LW Deku Scrub Deku Stick Upgrade':
         scrub = 1
     if 'Cow' in k:
         cow = 1
@@ -209,7 +188,7 @@ c.execute("INSERT INTO [unique_items] VALUES('Dins Fire','Required')")
 c.execute("INSERT INTO [unique_items] VALUES('Progressive Strength Upgrade','Required')")
 c.execute("INSERT INTO [unique_items] VALUES('Progressive Wallet','Required')")
 c.execute("INSERT INTO [unique_items] VALUES('Light Arrows','Required')")
-c.execute("INSERT INTO [unique_items] VALUES('Megaton Hammer','Required')")
+c.execute("INSERT INTO [unique_items] VALUES('Hammer','Required')")
 c.execute("INSERT INTO [unique_items] VALUES('Hover Boots','Required')")
 c.execute("INSERT INTO [unique_items] VALUES('Prescription','Required')")
 c.execute("INSERT INTO [unique_items] VALUES('Bottle with Big Poe','Required')")
@@ -228,52 +207,6 @@ c.execute("INSERT INTO [unique_items] VALUES('Prelude of Light','Song')")
 c.execute("INSERT INTO [unique_items] VALUES('Bolero of Fire','Song')")
 c.execute("INSERT INTO [unique_items] VALUES('Song of Storms','Song')")
 c.execute("INSERT INTO [unique_items] VALUES('Rupee (1)','Valid')")
-
-c.execute("INSERT INTO [sphere0] VALUES('Song from Malon', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Song from Saria', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Song at Windmill', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Sheik in Crater', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Sheik at Colossus', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Sheik Forest Song', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Song from Composer Grave', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Sheik at Temple', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Sheik in Ice Cavern', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Song from Ocarina of Time', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Sheik in Kakariko', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('DMT Freestanding PoH', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('KF Midos Top Left Chest', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('KF Midos Top Right Chest', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('KF Midos Bottom Left Chest', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('KF Midos Bottom Right Chest', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('LW Deku Scrub Near Bridge', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Deku Tree Map Chest', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Deku Tree Slingshot Chest', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Deku Tree Slingshot Room Side Chest', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Deku Tree Compass Chest', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Deku Tree Compass Room Side Chest', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Deku Tree Basement Chest', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('GV Waterfall Freestanding PoH', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Kak Anju as Adult', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Kak Open Grotto Chest', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('LH Child Fishing', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Graveyard Hookshot Chest', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Kak Man on Roof', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('ZR Open Grotto Chest', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Kak Windmill Freestanding PoH', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Kak Impas House Freestanding PoH', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('GV Crate Freestanding PoH', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Graveyard Shield Grave Chest', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('LLR Talons Chickens', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Graveyard Dampe Race Freestanding PoH', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Graveyard Dampe Gravedigging Tour', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Kak Anju as Child', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Market Shooting Gallery Reward', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('LW Ocarina Memory Game', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('Market Lost Dog', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('KF Kokiri Sword Chest', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('LLR Freestanding PoH', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('HF Open Grotto Chest', 0)")
-c.execute("INSERT INTO [sphere0] VALUES('LW Gift from Saria', 0)")
 
 conn.commit()
 conn.close()

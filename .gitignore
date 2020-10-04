@@ -5,8 +5,16 @@
 /4.0-style/
 /.vscode/
 /__pycache__/
+/s3-qual-spoilers/
+/wordsforswords/
+/spoilersS41S/
+/spoilersS42S/
 pgcred.py
 *.zip
 *.xlsx
 *.xlsm
 *.docx
+*.7z
+*.csv
+*.xml
+*.json
