@@ -1,15 +1,15 @@
 import sys
 import json
 # OoTR source code location
-sys.path.insert(0, '../../OoT-Randomizer-R')
+sys.path.insert(0, '../../OoT-Randomizer-Dev')
 import os
 import pyodbc
 from LocationList import location_table
 from HintList import hintTable
 
 conn = pyodbc.connect('Driver={SQL Server};'
-                      'Server=MAGELLAN\SQLEXPRESS;'
-                      'Database=OotrStatsS41S;'
+                      'Server=WHITEBOX\SQLEXPRESS;'
+                      'Database=OotrStatsDDRdotzo;'
                       'Trusted_Connection=yes;')
 c = conn.cursor()
 
@@ -70,9 +70,9 @@ c.execute("CREATE VIEW obvious_seeds AS SELECT seedlist.seed, seedlist.seeds * 1
 c.execute("CREATE VIEW stone_dungeons AS SELECT [seed], [loc] AS boss FROM [items] WHERE ([item] = 'Kokiri Emerald' OR [item] = 'Goron Ruby' OR [item] = 'Zora Sapphire') AND [loc] != 'Links Pocket'")
 c.execute("CREATE VIEW ganon_unfoolish AS SELECT DISTINCT [seed] FROM [items] LEFT JOIN [locations] ON [locations].loc = [items].loc WHERE [area] = 'Ganon''s Castle' AND ([item] = 'Kokiri Sword' OR [item] = 'Bomb Bag' OR [item] = 'Rutos Letter' OR [item] = 'Boomerang' OR [item] = 'Progressive Hookshot' OR [item] = 'Progressive Strength' OR [item] = 'Bow' OR [item] = 'Megaton Hammer' OR [item] = 'Bomb Bag' OR [item] = 'Progressive Strength' OR [item] = 'Bow' OR [item] = 'Progressive Hookshot' OR [item] = 'Iron Boots' OR [item] = 'Progressive Scale' OR [item] = 'Bow' OR [item] = 'Progressive Hookshot' OR [item] = 'Bomb Bag' OR [item] = 'Magic Meter' OR [item] = 'Dins Fire' OR [item] = 'Hover Boots' OR [item] = 'Progressive Strength' OR [item] = 'Mirror Shield' OR [item] = 'Progressive Hookshot' OR [item] = 'Slingshot' OR [item] = 'Boomerang')")
 c.execute("CREATE VIEW ganon_locked AS SELECT DISTINCT [stone_dungeons].[seed] FROM [stone_dungeons] LEFT JOIN [items] ON [stone_dungeons].[seed] = [items].[seed] LEFT JOIN [locations] ON [locations].loc = [items].loc WHERE [area] = 'Ganon''s Castle' AND (([boss] = 'Queen Gohma' AND [item] = 'Kokiri Sword') OR ([boss] = 'King Dodongo' AND [item] = 'Bomb Bag') OR ([boss] = 'Barinade' AND [item] = 'Rutos Letter') OR ([boss] = 'Barinade' AND [item] = 'Boomerang') OR ([boss] = 'Phantom Ganon' AND [item] = 'Progressive Hookshot') OR ([boss] = 'Phantom Ganon' AND [item] = 'Progressive Strength') OR ([boss] = 'Phantom Ganon' AND [item] = 'Bow') OR ([boss] = 'Volvagia' AND [item] = 'Megaton Hammer') OR ([boss] = 'Volvagia' AND [item] = 'Bomb Bag') OR ([boss] = 'Volvagia' AND [item] = 'Progressive Strength') OR ([boss] = 'Volvagia' AND [item] = 'Bow') OR ([boss] = 'Morpha' AND [item] = 'Progressive Hookshot') OR ([boss] = 'Morpha' AND [item] = 'Iron Boots') OR ([boss] = 'Morpha' AND [item] = 'Progressive Scale') OR ([boss] = 'Morpha' AND [item] = 'Bow') OR ([boss] = 'Bongo Bongo' AND [item] = 'Progressive Hookshot') OR ([boss] = 'Bongo Bongo' AND [item] = 'Bomb Bag') OR ([boss] = 'Bongo Bongo' AND [item] = 'Magic Meter') OR ([boss] = 'Bongo Bongo' AND [item] = 'Dins Fire') OR ([boss] = 'Bongo Bongo' AND [item] = 'Hover Boots') OR ([boss] = 'Twinrova' AND [item] = 'Progressive Strength') OR ([boss] = 'Twinrova' AND [item] = 'Mirror Shield') OR ([boss] = 'Twinrova' AND [item] = 'Progressive Hookshot') OR ([boss] = 'Twinrova' AND [item] = 'Slingshot') OR ([boss] = 'Twinrova' AND [item] = 'Boomerang'))")
-c.execute("CREATE VIEW num_woth AS SELECT [woth].[seed], COUNT([woth].[loc]) AS [num_woth] FROM [woth] GROUP BY [woth].[seed] ORDER BY [woth].[seed]")
-c.execute("CREATE VIEW num_items_woth AS SELECT [woth].[seed], COUNT([woth].[loc]) AS [num_woth] FROM [woth] LEFT JOIN [unique_items] ON [woth].[item] = [unique_items].[item] WHERE [woth].[item] != 'Light Arrows' AND [itype] != 'Song' GROUP BY [woth].[seed] ORDER BY [woth].[seed]")
-c.execute("CREATE VIEW num_songs_woth AS SELECT [woth].[seed], COUNT([woth].[loc]) AS [num_woth] FROM [woth] LEFT JOIN [unique_items] ON [woth].[item] = [unique_items].[item] WHERE [itype] = 'Song' GROUP BY [woth].[seed] ORDER BY [woth].[seed]")
+c.execute("CREATE VIEW num_woth AS SELECT [woth].[seed], COUNT([woth].[loc]) AS [num_woth] FROM [woth] GROUP BY [woth].[seed]")
+c.execute("CREATE VIEW num_items_woth AS SELECT [woth].[seed], COUNT([woth].[loc]) AS [num_woth] FROM [woth] LEFT JOIN [unique_items] ON [woth].[item] = [unique_items].[item] WHERE [woth].[item] != 'Light Arrows' AND [itype] != 'Song' GROUP BY [woth].[seed]")
+c.execute("CREATE VIEW num_songs_woth AS SELECT [woth].[seed], COUNT([woth].[loc]) AS [num_woth] FROM [woth] LEFT JOIN [unique_items] ON [woth].[item] = [unique_items].[item] WHERE [itype] = 'Song' GROUP BY [woth].[seed]")
 
 # Extract location metadata from source code
 for k,v in location_table.items():
@@ -176,7 +176,7 @@ c.execute("INSERT INTO [unique_items] VALUES('Stone of Agony','Junk')")
 c.execute("INSERT INTO [unique_items] VALUES('Deku Nut Capacity','Junk')")
 c.execute("INSERT INTO [unique_items] VALUES('Deku Nuts (5)','Junk')")
 c.execute("INSERT INTO [unique_items] VALUES('Ice Arrows','Junk')")
-c.execute("INSERT INTO [unique_items] VALUES('Kokiri Sword','Junk')")
+c.execute("INSERT INTO [unique_items] VALUES('Kokiri Sword','Required')")
 c.execute("INSERT INTO [unique_items] VALUES('Small Key (Ganons Castle)','Key')")
 c.execute("INSERT INTO [unique_items] VALUES('Small Key (Forest Temple)','Key')")
 c.execute("INSERT INTO [unique_items] VALUES('Boss Key (Forest Temple)','Key')")

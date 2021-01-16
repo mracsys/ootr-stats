@@ -1,18 +1,18 @@
 import sys
 import json
 # OoTR source code location
-sys.path.insert(0, '../../OoT-Randomizer-R')
+sys.path.insert(0, '../../OoT-Randomizer-Dev')
 import os
 import pyodbc
 from LocationList import location_table
 from HintList import hintTable
 
 # Spoiler log location
-spoilers = '../spoilersS42S/'
+spoilers = '../spoilersDDRdotzo/'
 
 conn = pyodbc.connect('Driver={SQL Server};'
-                      'Server=MAGELLAN\SQLEXPRESS;'
-                      'Database=OotrStatsS42S;'
+                      'Server=WHITEBOX\SQLEXPRESS;'
+                      'Database=OotrStatsDDRdotzo;'
                       'Trusted_Connection=yes;')
 c = conn.cursor()
 

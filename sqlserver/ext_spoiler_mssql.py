@@ -4,11 +4,11 @@ import os
 import pyodbc
 
 # Spoiler log location
-spoilers = '../spoilersS42S/'
+spoilers = '../spoilersDDRdotzo/'
 
 conn = pyodbc.connect('Driver={SQL Server};'
-                      'Server=MAGELLAN\SQLEXPRESS;'
-                      'Database=OotrStatsS42S;'
+                      'Server=WHITEBOX\SQLEXPRESS;'
+                      'Database=OotrStatsDDRdotzo;'
                       'Trusted_Connection=yes;')
 c = conn.cursor()
 
@@ -22,11 +22,13 @@ c.execute("DROP TABLE IF EXISTS dbo.fool")
 c.execute("DROP TABLE IF EXISTS dbo.items")
 c.execute("DROP TABLE IF EXISTS dbo.spheres")
 c.execute("DROP TABLE IF EXISTS dbo.ispheres")
+c.execute("DROP TABLE IF EXISTS dbo.entrances")
 c.execute('CREATE TABLE dbo.woth (seed NVARCHAR(16), loc NVARCHAR(59), item NVARCHAR(36))')
 c.execute('CREATE TABLE dbo.fool (seed NVARCHAR(16), area NVARCHAR(23))')
 c.execute('CREATE TABLE dbo.items (seed NVARCHAR(16), loc NVARCHAR(59), item NVARCHAR(36))')
 c.execute('CREATE TABLE dbo.spheres (seed NVARCHAR(16), loc NVARCHAR(59), item NVARCHAR(36), sphere INT)')
 c.execute('CREATE TABLE dbo.ispheres (seed NVARCHAR(16), loc NVARCHAR(59), item NVARCHAR(36), sphere INT)')
+c.execute('CREATE TABLE dbo.entrances (seed NVARCHAR(16), efrom NVARCHAR(59), rfrom NVARCHAR(59), eto NVARCHAR(59), rto NVARCHAR(59))')
 conn.commit()
 
 # process spoiler logs
@@ -66,6 +68,18 @@ for filename in os.listdir(spoilers):
                 row = (seed, l, item)
                 c.execute('INSERT INTO items VALUES(?, ?, ?)',row)
             
+            for ef, et in sp['entrances'].items():
+                rf = None
+                rt = None
+                if type(et) is dict:
+                    rt = et['region']
+                    et = et['from']
+                if type(ef) is dict:
+                    rf = ef['region']
+                    ef = ef['from']
+                row = (seed, ef, rf, et, rt)
+                c.execute('INSERT INTO entrances VALUES(?, ?, ?, ?, ?)',row)
+
             proghook = 1
             progstr = 1
             progscale = 1
